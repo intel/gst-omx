@@ -2685,6 +2685,18 @@ gst_omx_video_dec_set_format (GstVideoDecoder * decoder,
     if (gst_omx_port_allocate_buffers (self->dec_in_port) != OMX_ErrorNone)
       return FALSE;
 
+    /* Need to allocate buffers for o/p port to reach Idle state */
+    if (gst_omx_port_allocate_buffers (self->dec_out_port) != OMX_ErrorNone)
+      return FALSE;
+
+    /* re-enable output port */
+    if (gst_omx_port_set_enabled (self->dec_out_port, TRUE) != OMX_ErrorNone)
+      return FALSE;
+
+    if (gst_omx_port_wait_enabled (self->dec_out_port,
+            1 * GST_SECOND) != OMX_ErrorNone)
+      return FALSE;
+
     if (gst_omx_component_get_state (self->dec,
             GST_CLOCK_TIME_NONE) != OMX_StateIdle)
       return FALSE;
