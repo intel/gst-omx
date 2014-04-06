@@ -1288,6 +1288,16 @@ gst_omx_video_enc_set_format (GstVideoEncoder * encoder,
     /* Need to allocate buffers to reach Idle state */
     if (gst_omx_port_allocate_buffers (self->enc_in_port) != OMX_ErrorNone)
       return FALSE;
+#if 1 /*XuGuangxin: checke this late*/
+    if (gst_omx_port_allocate_buffers (self->enc_out_port) != OMX_ErrorNone)
+      return FALSE;
+    if (gst_omx_port_set_enabled (self->enc_out_port, TRUE) != OMX_ErrorNone)
+      return FALSE;
+
+    if (gst_omx_port_wait_enabled (self->enc_out_port,
+            1 * GST_SECOND) != OMX_ErrorNone)
+      return FALSE;
+#endif
 
     if (gst_omx_component_get_state (self->enc,
             GST_CLOCK_TIME_NONE) != OMX_StateIdle)
