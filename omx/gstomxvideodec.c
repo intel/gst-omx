@@ -851,6 +851,7 @@ static gboolean
 gst_omx_video_dec_shutdown (GstOMXVideoDec * self)
 {
   OMX_STATETYPE state;
+  OMX_ERRORTYPE last_error;
 
   GST_DEBUG_OBJECT (self, "Shutting down decoder");
 
@@ -882,6 +883,15 @@ gst_omx_video_dec_shutdown (GstOMXVideoDec * self)
 
   state = gst_omx_component_get_state (self->dec, 0);
   if (state > OMX_StateLoaded || state == OMX_StateInvalid) {
+    /*XuGuangxin: get_state is not work when we have error */
+    if (state == OMX_StateInvalid) {
+      last_error = gst_omx_component_get_last_error (self->dec);
+      if (last_error != OMX_ErrorNone) {
+        /*clear error and get real state */
+        gst_omx_component_clear_last_error (self->dec);
+        state = gst_omx_component_get_state (self->dec, 0);
+      }
+    }
     if (state > OMX_StateIdle) {
       gst_omx_component_set_state (self->dec, OMX_StateIdle);
       gst_omx_component_get_state (self->dec, 5 * GST_SECOND);
@@ -1606,8 +1616,8 @@ gst_omx_video_dec_deallocate_output_buffers (GstOMXVideoDec * self)
   }
 #if defined (USE_OMX_TARGET_RPI) && defined (HAVE_GST_EGL)
   err =
-      gst_omx_port_deallocate_buffers (self->
-      eglimage ? self->egl_out_port : self->dec_out_port);
+      gst_omx_port_deallocate_buffers (self->eglimage ? self->
+      egl_out_port : self->dec_out_port);
 #else
   err = gst_omx_port_deallocate_buffers (self->dec_out_port);
 #endif

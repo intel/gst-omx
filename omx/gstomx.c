@@ -958,6 +958,21 @@ gst_omx_component_get_port (GstOMXComponent * comp, guint32 index)
 
 /* NOTE: Uses comp->lock and comp->messages_lock */
 OMX_ERRORTYPE
+gst_omx_component_clear_last_error (GstOMXComponent * comp)
+{
+  OMX_ERRORTYPE err = OMX_ErrorNone;
+
+  g_return_val_if_fail (comp != NULL, OMX_ErrorUndefined);
+
+  g_mutex_lock (&comp->lock);
+  comp->last_error = OMX_ErrorNone;
+  g_mutex_unlock (&comp->lock);
+
+  return err;
+}
+
+/* NOTE: Uses comp->lock and comp->messages_lock */
+OMX_ERRORTYPE
 gst_omx_component_get_last_error (GstOMXComponent * comp)
 {
   OMX_ERRORTYPE err;

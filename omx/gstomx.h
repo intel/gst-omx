@@ -300,6 +300,7 @@ void              gst_omx_component_free (GstOMXComponent * comp);
 OMX_ERRORTYPE     gst_omx_component_set_state (GstOMXComponent * comp, OMX_STATETYPE state);
 OMX_STATETYPE     gst_omx_component_get_state (GstOMXComponent * comp, GstClockTime timeout);
 
+OMX_ERRORTYPE     gst_omx_component_clear_last_error(GstOMXComponent * comp);
 OMX_ERRORTYPE     gst_omx_component_get_last_error (GstOMXComponent * comp);
 const gchar *     gst_omx_component_get_last_error_string (GstOMXComponent * comp);
 
