@@ -76,6 +76,7 @@ struct _GstOMXVideoDec
 
   /* TRUE if upstream is EOS */
   gboolean eos;
+  guint32 caps_times;
 
   GstFlowReturn downstream_flow_ret;
 #ifdef USE_OMX_TARGET_RPI

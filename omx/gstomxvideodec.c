@@ -931,6 +931,7 @@ gst_omx_video_dec_close (GstVideoDecoder * decoder)
 #endif
 
   self->started = FALSE;
+  self->caps_times = 0;
 
   GST_DEBUG_OBJECT (self, "Closed decoder");
 
@@ -1123,8 +1124,8 @@ gst_omx_video_dec_fill_buffer (GstOMXVideoDec * self,
   gboolean ret = FALSE;
   GstVideoFrame frame;
 
-  if (vinfo->width != port_def->format.video.nFrameWidth ||
-      vinfo->height != port_def->format.video.nFrameHeight) {
+  if (vinfo->width > port_def->format.video.nFrameWidth ||
+      vinfo->height > port_def->format.video.nFrameHeight) {
     GST_ERROR_OBJECT (self, "Resolution do not match: port=%ux%u vinfo=%dx%d",
         (guint) port_def->format.video.nFrameWidth,
         (guint) port_def->format.video.nFrameHeight,
@@ -2258,6 +2259,7 @@ gst_omx_video_dec_start (GstVideoDecoder * decoder)
   self->last_upstream_ts = 0;
   self->eos = FALSE;
   self->downstream_flow_ret = GST_FLOW_OK;
+  self->caps_times = 0;
 
   return TRUE;
 }
@@ -2269,6 +2271,7 @@ gst_omx_video_dec_stop (GstVideoDecoder * decoder)
 
   self = GST_OMX_VIDEO_DEC (decoder);
 
+  self->caps_times = 0;
   GST_DEBUG_OBJECT (self, "Stopping decoder");
 
   gst_omx_port_set_flushing (self->dec_in_port, 5 * GST_SECOND, TRUE);
@@ -2501,6 +2504,11 @@ gst_omx_video_dec_set_format (GstVideoDecoder * decoder,
   OMX_PARAM_PORTDEFINITIONTYPE port_def;
 
   self = GST_OMX_VIDEO_DEC (decoder);
+  if (self->caps_times == 0)
+    self->caps_times++;
+  else {
+    return TRUE;
+  }
   klass = GST_OMX_VIDEO_DEC_GET_CLASS (decoder);
 
   GST_DEBUG_OBJECT (self, "Setting new caps %" GST_PTR_FORMAT, state->caps);
